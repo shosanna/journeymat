@@ -33,29 +33,11 @@ void setupRadio() {
   vw_setup(1000);
 }
 
-void sendRadio() {
- // vytvoření proměnných pro různé
-  // druhy zpráv
-  // proměnná zprava pro poslání textu
-  const char *zprava = "Cas od zapnuti: ";
-  // proměnná s načtením počtu sekund od
-  // připojení napájení
-  long cas = millis()/1000;
-  // pracovní proměnná pro konverzi
-  // čísla na text
-  char znaky [128];
-  // příkazy pro konverzi čísla na text,
-  // čas převedený na text je uložen do
-  // proměnné casZnaky
-  snprintf(znaky, sizeof(znaky), "%ld", cas);
-  char *casZnaky = znaky;
-  Serial.print("VYSILACI ARDUINO: ");
-  Serial.println(znaky);
+void sendRadio(char* zprava) {
+  Serial.println(zprava);
   // odeslání textu v proměnné zprava
   vw_send((uint8_t *)zprava, strlen(zprava));
   // vyčkání na odeslání celé zprávy
-  vw_wait_tx();
-  vw_send((uint8_t *)casZnaky, strlen(casZnaky));
   vw_wait_tx();
 }
 
@@ -110,15 +92,20 @@ void loop() {
    
    if (hodnoceni1 || hodnoceni2 || hodnoceni3) {
      int hodnoceni = hodnoceni1 ? 1 : (hodnoceni2 ? 2 : (hodnoceni3 ? 3 : 0));
-     
-     Serial.print(vybranyNufik == NUFINKA ? "Nufinka:" : "Nufik: ");
-     Serial.println(hodnoceni == 1 ? "Super" : (hodnoceni == 2 ? "Neutral" : (hodnoceni == 3 ? "Hruza" : "-")));
+
+      char hodnoticiZprava[16];
+      char hodnoticiZPrava2[16];
+      strcpy(hodnoticiZprava, vybranyNufik == NUFINKA ? "Nufinka:" : "Nufik: ");
+      strcpy(hodnoticiZPrava2, hodnoceni == 1 ? "Super" : (hodnoceni == 2 ? "Neutral" : (hodnoceni == 3 ? "Hruza" : "-")));
+      strcat(hodnoticiZprava, hodnoticiZPrava2);     
+
+     Serial.println(hodnoticiZprava);
      
      lcd.clear();
      lcd.print(vybranyNufik == NUFINKA ? "Nufinka:" : "Nufik: ");
      lcd.setCursor(0,1);
      lcd.print(hodnoceni == 1 ? "Super" : (hodnoceni == 2 ? "Neutral" : (hodnoceni == 3 ? "Hruza" : "-")));
-     sendRadio();
+     sendRadio(hodnoticiZprava);
      
      delay(1000);
      defaultniHlaska();
